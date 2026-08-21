@@ -1,0 +1,17 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+@import "../fontes/fontes.css";
+
+@theme {
+  --font-sans: "Fira Sans", "Segoe UI", sans-serif;
+  --font-titulo: "Titillium Web", "Segoe UI", sans-serif;
+}
+
+@layer base {
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-titulo);
+    font-weight: 600;
+  }
+}
