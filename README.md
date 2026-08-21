@@ -110,46 +110,46 @@ modelo falso do próprio LangChain.
 Todas as rotas exigem o cabeçalho `X-Sessao`, exceto `/api/saude` e a criação da
 sessão. As rotas que alteram estado exigem também `X-Token-Protecao`.
 
-| O que faz | Método e rota | Request | Response | Erros |
-|---|---|---|---|---|
-| Abre sessão | `POST /api/sessoes` | sem corpo | `201` `{sessaoId, tokenProtecao, expiraEmMinutos}` | `429` limite de requisições |
-| Envia um PDF | `POST /api/documentos` | `multipart/form-data`, campo `arquivo` | `201` `{nomeArquivo, tamanhoBytes, totalPaginas, paginasComTexto, totalCaracteres, possuiTexto, criadoEm, aviso?}` | `400` inválido, não-PDF, com senha ou acima de 300 páginas; `403` token ausente; `404` sessão expirada; `413` acima de 20 MB; `429` limite |
-| Consulta o documento | `GET /api/documentos` | — | `200` metadados, ou `{"documento": null}` | `404` sessão expirada |
-| Pergunta | `POST /api/mensagens` | `{"pergunta": "texto"}` | `200` `text/event-stream`, uma linha `data:` por evento | `400` pergunta vazia ou acima de 2.000 caracteres; `403` token ausente; `404` sessão expirada ou sem documento; `429` limite |
-| Lista o histórico | `GET /api/mensagens` | — | `200` `{mensagens: [{autor, texto, criadoEm}]}` | `404` sessão expirada |
-| Remove o documento | `DELETE /api/documentos` | — | `200` `{removido: true}` | `403` token ausente; `404` sessão expirada |
-| Verifica o serviço | `GET /api/saude` | — | `200` `{status, agenteConfigurado, modelo, sessoesAtivas, limites}` | — |
+| O que faz            | Método e rota            | Request                                | Response                                                                                                           | Erros                                                                                                                                      |
+| -------------------- | ------------------------ | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Abre sessão          | `POST /api/sessoes`      | sem corpo                              | `201` `{sessaoId, tokenProtecao, expiraEmMinutos}`                                                                 | `429` limite de requisições                                                                                                                |
+| Envia um PDF         | `POST /api/documentos`   | `multipart/form-data`, campo `arquivo` | `201` `{nomeArquivo, tamanhoBytes, totalPaginas, paginasComTexto, totalCaracteres, possuiTexto, criadoEm, aviso?}` | `400` inválido, não-PDF, com senha ou acima de 300 páginas; `403` token ausente; `404` sessão expirada; `413` acima de 20 MB; `429` limite |
+| Consulta o documento | `GET /api/documentos`    | —                                      | `200` metadados, ou `{"documento": null}`                                                                          | `404` sessão expirada                                                                                                                      |
+| Pergunta             | `POST /api/mensagens`    | `{"pergunta": "texto"}`                | `200` `text/event-stream`, uma linha `data:` por evento                                                            | `400` pergunta vazia ou acima de 2.000 caracteres; `403` token ausente; `404` sessão expirada ou sem documento; `429` limite               |
+| Lista o histórico    | `GET /api/mensagens`     | —                                      | `200` `{mensagens: [{autor, texto, criadoEm}]}`                                                                    | `404` sessão expirada                                                                                                                      |
+| Remove o documento   | `DELETE /api/documentos` | —                                      | `200` `{removido: true}`                                                                                           | `403` token ausente; `404` sessão expirada                                                                                                 |
+| Verifica o serviço   | `GET /api/saude`         | —                                      | `200` `{status, agenteConfigurado, modelo, sessoesAtivas, limites}`                                                | —                                                                                                                                          |
 
 ### Eventos do streaming
 
 O corpo de `POST /api/mensagens` traz um JSON por evento:
 
-| Evento | Formato | Significado |
-|---|---|---|
-| `ferramenta` | `{"tipo":"ferramenta","nome":"buscar_trechos"}` | O agente está consultando o documento |
-| `texto` | `{"tipo":"texto","conteudo":"..."}` | Pedaço da resposta, na ordem em que é gerada |
-| `fim` | `{"tipo":"fim","resposta":"..."}` | Resposta completa; o histórico é gravado só aqui |
-| `erro` | `{"tipo":"erro","mensagem":"..."}` | Falha tratada, com texto pronto para exibição |
+| Evento       | Formato                                         | Significado                                      |
+| ------------ | ----------------------------------------------- | ------------------------------------------------ |
+| `ferramenta` | `{"tipo":"ferramenta","nome":"buscar_trechos"}` | O agente está consultando o documento            |
+| `texto`      | `{"tipo":"texto","conteudo":"..."}`             | Pedaço da resposta, na ordem em que é gerada     |
+| `fim`        | `{"tipo":"fim","resposta":"..."}`               | Resposta completa; o histórico é gravado só aqui |
+| `erro`       | `{"tipo":"erro","mensagem":"..."}`              | Falha tratada, com texto pronto para exibição    |
 
 ### Ferramentas do agente
 
-| Ferramenta | O que faz |
-|---|---|
-| `buscar_trechos` | Busca BM25 nos trechos do documento e devolve os mais relevantes com o número da página |
-| `ler_pagina` | Devolve o texto completo de uma página |
-| `informacoes_documento` | Devolve nome, número de páginas e o início do documento |
+| Ferramenta              | O que faz                                                                               |
+| ----------------------- | --------------------------------------------------------------------------------------- |
+| `buscar_trechos`        | Busca BM25 nos trechos do documento e devolve os mais relevantes com o número da página |
+| `ler_pagina`            | Devolve o texto completo de uma página                                                  |
+| `informacoes_documento` | Devolve nome, número de páginas e o início do documento                                 |
 
 ## Estruturas em memória
 
 Definidas em `backend/app/models/documento.py`.
 
-| Estrutura | Finalidade | Campos |
-|---|---|---|
-| `Sessao` | Une documento e conversa a um usuário anônimo | `identificador`, `token_protecao`, `documento`, `mensagens`, `criada_em`, `ultimo_acesso` |
-| `Documento` | PDF carregado e seu texto | `nome_arquivo`, `tamanho_bytes`, `total_paginas`, `paginas`, `trechos`, `criado_em` |
-| `Pagina` | Texto de uma página | `numero`, `texto` |
-| `Trecho` | Bloco indexável de uma página, usado na busca | `pagina`, `ordem`, `texto` |
-| `Mensagem` | Uma fala da conversa | `autor`, `texto`, `criado_em` |
+| Estrutura   | Finalidade                                    | Campos                                                                                    |
+| ----------- | --------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `Sessao`    | Une documento e conversa a um usuário anônimo | `identificador`, `token_protecao`, `documento`, `mensagens`, `criada_em`, `ultimo_acesso` |
+| `Documento` | PDF carregado e seu texto                     | `nome_arquivo`, `tamanho_bytes`, `total_paginas`, `paginas`, `trechos`, `criado_em`       |
+| `Pagina`    | Texto de uma página                           | `numero`, `texto`                                                                         |
+| `Trecho`    | Bloco indexável de uma página, usado na busca | `pagina`, `ordem`, `texto`                                                                |
+| `Mensagem`  | Uma fala da conversa                          | `autor`, `texto`, `criado_em`                                                             |
 
 ## Estrutura de pastas
 
