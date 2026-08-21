@@ -1,0 +1,1 @@
+"""Pacote routes do Docsy."""
