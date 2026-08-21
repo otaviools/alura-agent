@@ -123,7 +123,7 @@ async function trocarDocumento() {
 
       <template #footer="{ state }">
         <p v-if="state === 'expanded'" class="text-xs text-muted">
-          Ate 20 MB e 300 paginas. O arquivo nao e gravado em disco e some ao
+          Ate 20 MB e 300 paginas. O arquivo não é gravado em disco e some ao
           sair.
         </p>
       </template>
@@ -209,8 +209,6 @@ async function trocarDocumento() {
             </div>
           </div>
 
-          <!-- Padding no wrapper (nao margem no input): margem em elemento
-               w-full somaria alem da largura e vazaria na borda no mobile. -->
           <div class="px-3 pb-3 sm:px-4 sm:pb-4">
             <UChatPrompt
               v-model="pergunta"

@@ -1,25 +1,25 @@
 # Docsy
 
-Envie um PDF, pergunte sobre ele. As respostas citam a página de origem.
+O Docsy recebe um arquivo PDF e abre um chat sobre o conteúdo dele. Cada
+resposta cita a página de origem no formato `(página N)`.
 
 Projeto pessoal de Otávio Santos.
 
 ## O que faz
 
-O Docsy recebe um arquivo PDF, extrai o texto página a página e abre um chat
-sobre o conteúdo. Um agente construído com LangChain busca os trechos
-relevantes, lê as páginas que precisar e responde em português citando a origem
-no formato `(página N)`.
+O Docsy extrai o texto do PDF página a página. Um agente construído com
+LangChain busca os trechos relevantes, lê as páginas necessárias e responde em
+português citando a origem no formato `(página N)`.
 
-Nada é gravado em disco nem em banco de dados. O documento e a conversa vivem na
-memória do servidor e são descartados ao trocar de arquivo, ao remover, após 60
-minutos de inatividade ou quando o servidor reinicia.
+A aplicação não grava dados em disco nem em banco. O documento e a conversa
+ficam na memória do servidor e são descartados ao trocar de arquivo, ao remover
+o documento, após 60 minutos de inatividade ou quando o servidor reinicia.
 
 ## Stack
 
 Back-end:
 
-- **Python 3.14.0**
+- Python 3.14.0
 - Flask 3.1.3 — servidor HTTP e rotas
 - LangChain 1.3.16 + langchain-google-genai 4.3.5 — agente e ferramentas
 - pdfplumber 0.11.10 — extração de texto do PDF
@@ -28,29 +28,33 @@ Back-end:
 
 Front-end:
 
-- **Node 24.15.0**
+- Node 24.15.0
 - Nuxt 4.5.2 (Vue 3 sobre Nitro)
 - Nuxt UI 4.10.0 — componentes de interface: barra lateral, chat e upload
 - Tailwind CSS 4.3.3
 - @iconify-json/lucide — ícones
 
-Modelo de IA: **Google Gemini** (`gemini-flash-lite-latest` por padrao).
+Modelo de IA: Google Gemini (`gemini-flash-lite-latest` por padrão).
 
 ## Como rodar
 
 Pré-requisitos: Python 3.14, Node 24 e uma chave da API do Google Gemini
 ([aistudio.google.com/apikey](https://aistudio.google.com/apikey)).
 
-> Se o projeto estiver em uma pasta com caminho muito longo, a instalação das
-> dependências Python pode falhar com `OSError: [Errno 2] No such file or
-> directory`. É o limite de 260 caracteres do Windows. Mova o projeto para uma
-> pasta mais curta ou habilite o suporte a caminhos longos.
+Se o projeto estiver em uma pasta com caminho muito longo, a instalação das
+dependências Python pode falhar com `OSError: [Errno 2] No such file or
+directory`. É o limite de 260 caracteres do Windows. Mova o projeto para uma
+pasta com caminho mais curto ou habilite o suporte a caminhos longos.
 
 ### 1. Back-end
+
+Crie o ambiente virtual:
 
 ```bash
 cd backend && python -m venv .venv
 ```
+
+Instale as dependências:
 
 ```bash
 cd backend && .venv/Scripts/python.exe -m pip install -r requirements.txt
@@ -63,7 +67,7 @@ cp backend/.env.example backend/.env
 ```
 
 Edite `backend/.env` e substitua o valor de `GOOGLE_API_KEY` pela sua chave.
-Sem ela a aplicação sobe, aceita o PDF e mostra os metadados, mas o chat
+Sem a chave, a aplicação sobe, aceita o PDF e mostra os metadados, mas o chat
 responde que o serviço de IA não está configurado.
 
 Suba o servidor:
@@ -77,18 +81,20 @@ A API fica em `http://127.0.0.1:5000`. Confira com
 
 ### 2. Front-end
 
-Em outro terminal:
+Em outro terminal, instale as dependências:
 
 ```bash
 cd frontend && npm install
 ```
 
+Suba o servidor de desenvolvimento:
+
 ```bash
 cd frontend && npm run dev
 ```
 
-Abra `http://localhost:3000`. O Nuxt repassa tudo que começa com `/api` para o
-back-end, então o navegador conversa com uma origem só.
+Abra `http://localhost:3000`. O Nuxt repassa ao back-end tudo que começa com
+`/api`, então o navegador usa uma origem só.
 
 ### 3. Testes
 
@@ -96,13 +102,13 @@ back-end, então o navegador conversa com uma origem só.
 cd backend && .venv/Scripts/python.exe -m pytest tests -q
 ```
 
-Os 18 testes rodam sem chamar a API do Gemini: o agente é exercitado com um
+Os 18 testes rodam sem chamar a API do Gemini. O agente é exercitado com um
 modelo falso do próprio LangChain.
 
 ## Endpoints
 
 Todas as rotas exigem o cabeçalho `X-Sessao`, exceto `/api/saude` e a criação da
-sessão. As que alteram estado exigem também `X-Token-Protecao`.
+sessão. As rotas que alteram estado exigem também `X-Token-Protecao`.
 
 | O que faz | Método e rota | Request | Response | Erros |
 |---|---|---|---|---|
@@ -122,7 +128,7 @@ O corpo de `POST /api/mensagens` traz um JSON por evento:
 |---|---|---|
 | `ferramenta` | `{"tipo":"ferramenta","nome":"buscar_trechos"}` | O agente está consultando o documento |
 | `texto` | `{"tipo":"texto","conteudo":"..."}` | Pedaço da resposta, na ordem em que é gerada |
-| `fim` | `{"tipo":"fim","resposta":"..."}` | Resposta completa; só aqui o histórico é gravado |
+| `fim` | `{"tipo":"fim","resposta":"..."}` | Resposta completa; o histórico é gravado só aqui |
 | `erro` | `{"tipo":"erro","mensagem":"..."}` | Falha tratada, com texto pronto para exibição |
 
 ### Ferramentas do agente
@@ -180,14 +186,14 @@ docsy/
 
 ## Limitações
 
-- O conteúdo do documento é enviado à API do Google Gemini. Não use com documento
-  que você não possa compartilhar com um serviço de terceiros.
-- Sem OCR: PDF escaneado como imagem é aceito, mas não há texto para ler — a
+- O conteúdo do documento é enviado à API do Google Gemini. Não use com
+  documento que você não possa compartilhar com um serviço de terceiros.
+- Não há OCR. PDF escaneado como imagem é aceito, mas não tem texto para ler; a
   interface avisa.
-- Sem login. Para publicar na internet, isso precisa mudar.
+- Não há login. Para publicar na internet, é preciso adicionar autenticação.
 - O estado em memória e o limite de requisições assumem uma instância só.
 
-Detalhes e ideias futuras em [PLANEJAMENTO.md](PLANEJAMENTO.md).
+As decisões técnicas e as ideias futuras estão em [PLANEJAMENTO.md](PLANEJAMENTO.md).
 
 ## Licenças de terceiros
 
