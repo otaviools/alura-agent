@@ -1,0 +1,10 @@
+{
+  "//": "Raiz de tipos do projeto. Aponta para os tsconfigs gerados pelo Nuxt em .nuxt/, que trazem os auto-imports (ref, computed, useDocsy, etc.) para o editor. Rode 'nuxt prepare' se o .nuxt/ estiver ausente.",
+  "files": [],
+  "references": [
+    { "path": "./.nuxt/tsconfig.app.json" },
+    { "path": "./.nuxt/tsconfig.server.json" },
+    { "path": "./.nuxt/tsconfig.shared.json" },
+    { "path": "./.nuxt/tsconfig.node.json" }
+  ]
+}
