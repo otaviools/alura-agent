@@ -1,0 +1,24 @@
+# Dependencias do back-end do Docsy — Python 3.14.0
+# Todas conferidas quanto a existencia, autoria, reputacao e licenca (secao 4.2).
+#
+# Flask               BSD-3-Clause  — Pallets Projects
+# Flask-Limiter       MIT           — Ali-Akber Saifee
+# pdfplumber          MIT           — Jeremy Singer-Vine (sobre pdfminer.six, MIT)
+# langchain           MIT           — LangChain, Inc.
+# langchain-google-genai MIT        — LangChain, Inc. (cliente do Google Gemini)
+# rank-bm25           Apache-2.0    — Dorian Brown
+# python-dotenv       BSD-3-Clause  — Saurabh Kumar
+
+Flask==3.1.3
+Flask-Limiter==4.1.1
+pdfplumber==0.11.10
+langchain==1.3.16
+langchain-google-genai==4.3.5
+rank-bm25==0.2.2
+python-dotenv==1.2.3
+
+# Testes
+# pytest      MIT           — Holger Krekel e colaboradores
+# reportlab   BSD-3-Clause  — ReportLab Europe (gera o PDF de exemplo dos testes)
+pytest==9.1.1
+reportlab==5.0.1

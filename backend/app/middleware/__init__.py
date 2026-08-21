@@ -1,0 +1,1 @@
+"""Pacote middleware do Docsy."""
